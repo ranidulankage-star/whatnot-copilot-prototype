@@ -419,12 +419,25 @@ const ANSWERS={
       <tr><td>Shipping labels</td><td class="num down">−$212</td></tr>
       <tr><td>Refunds (2)</td><td class="num down">−$94</td></tr>
       <tr><td><b>Net payout</b></td><td class="num"><b>$4,680</b></td></tr></tbody></table>`,prov:"Ledger · Sunday settlement · 1.0s",follow:["Why were there 2 refunds?","Dispute a charge","Am I on track for Sales Match?"]})},
+  topitems:{match:["sold best","what sold","top items","best sellers","top lots","best on sunday","what sold best","top selling","best selling"],steps:["Pulling line items from the show","Ranking by revenue"],
+    render:()=>card({label:"Top items · Sunday Marketplace",table:`<table class="at"><thead><tr><th>Item</th><th class="num">Sold for</th></tr></thead><tbody>
+      <tr><td>Charizard VMAX Rainbow — PSA 9</td><td class="num">$420</td></tr>
+      <tr><td>Jordan 1 Chicago OG</td><td class="num">$320</td></tr>
+      <tr><td>Pikachu Illustrator proxy</td><td class="num">$180</td></tr>
+      <tr><td>1st Ed Blastoise Holo</td><td class="num">$155</td></tr>
+      <tr><td>Mixed Pokémon mystery lots ×24</td><td class="num">$1,090</td></tr></tbody></table>`,sub:'Pokémon singles drove <b>62%</b> of the $5,420 total. The 24 mystery lots kept the crowd engaged between big hits.',prov:"Orders · Sunday Marketplace · 392 viewers · 1.4s",follow:["Why did Sunday do so well?","Source more Charizards","What should I feature next show?"]})},
   salesmatch:{match:["sales match","on track","qualifier","bonus"],steps:["Checking your GMV vs the Sales Match threshold","Projecting from your show cadence"],
     render:()=>card({label:"Sales Match progress",headline:"$340 to go",sub:'You\'re <b>$340</b> from this week\'s qualifier with <b>4 days left</b>. Your Thursday shows average $280–$400 — one more show likely closes the gap (94% on pace).',viz:bars([["You","$4,660",88,0],["Target","$5,000",100,1]]),prov:"Ledger · Sales Match window · 1.3s",acts:[["ti-calendar-plus","Schedule a Thursday show",1]],follow:["When's my next payout?","What show makes the most GMV?","Remind me tomorrow"]})}
 };
 
-const FALLBACK={steps:["Understanding your question","Checking what I can answer"],
-  render:()=>card({prose:`I'm focused on <b>analytics</b> right now — I can answer questions about GMV, shows, viewers, buyers, inventory, orders, and payouts. Try one of these:`,follow:["What was my GMV last week?","Which items are about to stock out?","My return rate looks high — what's going on?","When's my next payout?"]})};
+/* Honest "uncertainty" state — acknowledges the question, says exactly why it can't answer, offers the closest things it CAN do. */
+const FALLBACK={steps:["Understanding your question","Checking the data I can reach"],
+  render:(q)=>card({
+    label:"I can't answer that one — here's why",
+    prose:`I don't have the data to answer <b>"${escapeHtml(q||'that')}"</b> reliably, so I'd rather say so than guess.<br><br>Right now I can pull anything from your <b>orders, shows, viewers, inventory, buyers, and payouts</b>. I can't yet reach external benchmarks, ad-platform data, or anything that requires connecting another tool.<br><br>Here are related questions I <em>can</em> answer:`,
+    acts:[],
+    follow:["What sold best on Sunday?","Compare my last 3 shows","Who are my top buyers?","Which items are about to stock out?"]
+  })};
 
 /* ===================== RENDER HELPERS ===================== */
 function metric(l,v,dir,d,q){return `<div class="metric" data-q="${(q||'').replace(/"/g,'&quot;')}"><div class="ml">${l}</div><div class="mv">${v}</div>${d?`<div class="md ${dir}">${d}</div>`:''}${q?`<div class="ask-chip"><i class="ti ti-sparkles"></i> Ask</div>`:''}</div>`;}
