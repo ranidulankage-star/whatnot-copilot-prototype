@@ -156,6 +156,9 @@
   .fb{margin-left:auto;display:flex;gap:8px}
   .fb i{color:#bbb;cursor:pointer;font-size:15px}
   .fb i:hover{color:var(--muted)}
+  .cite{display:flex;align-items:center;gap:8px;margin-top:12px;background:var(--bg);border:1px solid var(--line2);border-radius:9px;padding:10px 12px;font-size:12.5px;font-weight:600;color:var(--ink);text-decoration:none}
+  .cite:hover{border-color:#000}
+  .cite i:first-child{color:#000;font-size:15px}
   .followups{margin:2px 0 16px}
   .followups .fl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px}
   .chip{display:inline-block;font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:6px 11px;margin:0 5px 5px 0;cursor:pointer}
@@ -430,6 +433,28 @@ const ANSWERS={
     render:()=>card({label:"Sales Match progress",headline:"$340 to go",sub:'You\'re <b>$340</b> from this week\'s qualifier with <b>4 days left</b>. Your Thursday shows average $280–$400 — one more show likely closes the gap (94% on pace).',viz:bars([["You","$4,660",88,0],["Target","$5,000",100,1]]),prov:"Ledger · Sales Match window · 1.3s",acts:[["ti-calendar-plus","Schedule a Thursday show",1]],follow:["When's my next payout?","What show makes the most GMV?","Remind me tomorrow"]})}
 };
 
+/* KNOWLEDGE / how-to handoff — for support questions that live in docs, not data.
+   v1 gracefully points to the official Help Center; v2 answers them natively (RAG). */
+const HELP_ARTICLES=[
+  {k:["media mail","shipping","ship","label","package","postage","carrier"],t:"Shipping profiles & Media Mail eligibility",u:"help.whatnot.com/shipping-profiles"},
+  {k:["payout","fee","charged","billback","when do i get paid","settlement"],t:"How payouts, fees & billbacks work",u:"help.whatnot.com/payouts-and-fees"},
+  {k:["ban","banned","suspend","violation","appeal","account health","strike"],t:"Account health, violations & appeals",u:"help.whatnot.com/account-health"},
+  {k:["sales match","super seller","bonus","eligible","qualify"],t:"Seller bonuses & Sales Match rules",u:"help.whatnot.com/seller-bonuses"},
+  {k:["go live","obs","stream","set up a show","start a show","streaming"],t:"Going live & OBS setup",u:"help.whatnot.com/going-live"},
+  {k:["promote","promotion","ads","coupon","giveaway"],t:"Promotions, ads & coupons",u:"help.whatnot.com/promotions"},
+];
+function helpArticle(q){const s=q.toLowerCase();for(const a of HELP_ARTICLES){if(a.k.some(m=>s.includes(m)))return a;}return{t:"Whatnot Seller Help Center",u:"help.whatnot.com/seller"};}
+const HOWTO_MARKERS=["how do i","how do you","how to","how does","how can i","how can you","set up","set-up","setup","where do i","where can i","what's the policy","whats the policy","what are the rules","do i need","am i allowed","can i change","is it possible to","what happens if","why was i charged","why am i charged"];
+const KNOWLEDGE={steps:["Recognizing this as a how-to question","Finding the official answer"],
+  render:(q)=>{const a=helpArticle(q);return `<div class="acard"><div class="ah">
+    <div class="al" style="display:flex;align-items:center;gap:6px"><i class="ti ti-book-2" style="font-size:13px"></i> How-to · from Whatnot Help</div>
+    <div class="prose">That's a <b>how-to question</b>, not an analytics one. I'm focused on your store data today — but this is covered in Whatnot's official Help Center:</div>
+    <a class="cite" href="https://${a.u}" target="_blank"><i class="ti ti-file-text"></i> ${a.t} <i class="ti ti-external-link" style="font-size:12px;margin-left:auto"></i></a>
+    </div>
+    <div class="acts"><span class="fb"><i class="ti ti-thumb-up"></i><i class="ti ti-thumb-down"></i></span></div></div>
+    <div class="prose" style="font-size:11.5px;color:var(--muted);margin:-6px 2px 14px;padding-left:10px;border-left:2px solid var(--line)"><b>Coming in v2:</b> I'll answer how-to questions directly — grounded in Whatnot's help articles &amp; video guides, with citations — instead of linking you out.</div>
+    ${followups(["What was my GMV last week?","Which items are about to stock out?","When's my next payout?"])}`;}};
+
 /* Honest "uncertainty" state — acknowledges the question, says exactly why it can't answer, offers the closest things it CAN do. */
 const FALLBACK={steps:["Understanding your question","Checking the data I can reach"],
   render:(q)=>card({
@@ -556,11 +581,23 @@ function wsBriefing(){
     <div class="followups" style="margin-top:18px"><div class="fl">Or ask anything</div>
       <span class="chip" data-q="Compare my last 3 shows">Compare my last 3 shows</span>
       <span class="chip" data-q="Which items are about to stock out?">Which items are about to stock out?</span>
+      <span class="chip" data-q="How do I set up Media Mail shipping?">How do I set up Media Mail shipping?</span>
       <span class="chip" data-q="When's my next payout?">When's my next payout?</span></div>`;
 }
 
 /* ===================== SUBMIT / STREAM (shared) ===================== */
-function matchAnswer(q){const s=q.toLowerCase();let best=null,score=0;for(const k in ANSWERS){let sc=0;ANSWERS[k].match.forEach(m=>{if(s.includes(m))sc+=m.length;});if(sc>score){score=sc;best=ANSWERS[k];}}return score>0?best:FALLBACK;}
+function matchAnswer(q){
+  const s=q.toLowerCase();
+  // How-to phrasing routes to the knowledge handoff first (e.g. "how do I set up shipping")
+  if(HOWTO_MARKERS.some(m=>s.includes(m))) return KNOWLEDGE;
+  // otherwise score analytics answers
+  let best=null,score=0;
+  for(const k in ANSWERS){let sc=0;ANSWERS[k].match.forEach(m=>{if(s.includes(m))sc+=m.length;});if(sc>score){score=sc;best=ANSWERS[k];}}
+  if(score>0) return best;
+  // support topic without a how-to marker? still hand off to Help rather than dead-end
+  if(HELP_ARTICLES.some(a=>a.k.some(m=>s.includes(m)))) return KNOWLEDGE;
+  return FALLBACK;
+}
 function submit(q,target){
   started=true; cpSub.textContent='Active thread';
   const empty=target.querySelector('.cp-empty'); if(empty)empty.remove();
