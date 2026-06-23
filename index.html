@@ -247,6 +247,7 @@
     <div class="cp-spark"><i class="ti ti-sparkles"></i></div>
     <div><div class="cp-title">Copilot</div><div class="cp-sub" id="cpSub">New thread</div></div>
     <span class="ctx" id="cpCtx">Home</span>
+    <button class="cp-expand tt" data-tt="New thread" id="cpNew"><i class="ti ti-edit"></i></button>
     <button class="cp-expand tt" data-tt="Open full workspace" id="cpExpand"><i class="ti ti-arrows-diagonal"></i></button>
     <button class="cp-x" id="cpX"><i class="ti ti-x"></i></button>
   </div>
@@ -464,7 +465,7 @@ function renderTab(tab){
   bindMetrics();
   // update copilot context + suggestions live
   cpCtx.textContent=TABS[tab].ctx;
-  if(copilot.classList.contains('open') && !started){ cpBody.innerHTML=emptyState(); bindCards(); }
+  if(copilot.classList.contains('open') && !hasThread()){ cpBody.innerHTML=emptyState(); bindCards(); }
   // context toast
   ctoastTab.textContent=TABS[tab].label;
   ctoast.classList.add('show'); clearTimeout(window._ct); window._ct=setTimeout(()=>ctoast.classList.remove('show'),1900);
@@ -485,11 +486,14 @@ function emptyState(){
       <div class="recent" data-q="My return rate looks high — what's going on?"><i class="ti ti-message"></i><span class="rt">Return rate check</span><span class="rm">1d</span></div>
     </div></div>`;
 }
-function openCopilot(){copilot.classList.add('open');scrim.classList.add('show');khint.classList.add('gone');fab.classList.add('hide');if(!started){cpBody.innerHTML=emptyState();bindCards();}setTimeout(()=>input.focus(),260);}
+function hasThread(){return cpBody.querySelector('.umsg')!==null;}
+function newThread(){cpBody.innerHTML=emptyState();bindCards();cpSub.textContent='New thread';input.focus();}
+function openCopilot(){copilot.classList.add('open');scrim.classList.add('show');khint.classList.add('gone');fab.classList.add('hide');if(!hasThread()){cpBody.innerHTML=emptyState();bindCards();}setTimeout(()=>input.focus(),260);}
 function closeCopilot(){copilot.classList.remove('open');scrim.classList.remove('show');if(currentTab!=='ask')fab.classList.remove('hide');}
 document.getElementById('sparkBtn').onclick=openCopilot;
 fab.onclick=openCopilot;
 document.getElementById('cpX').onclick=closeCopilot;
+document.getElementById('cpNew').onclick=newThread;
 document.getElementById('cpExpand').onclick=()=>{closeCopilot();renderTab('ask');};
 scrim.onclick=closeCopilot;
 document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();copilot.classList.contains('open')?closeCopilot():openCopilot();}if(e.key==='Escape'&&copilot.classList.contains('open'))closeCopilot();});
