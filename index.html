@@ -186,7 +186,8 @@
   .ws-new{margin:auto 14px 14px;background:#000;color:#fff;border:none;border-radius:8px;padding:10px;font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
   .ws-new i{font-size:14px}
   .ws-main{flex:1;display:flex;flex-direction:column;min-width:0}
-  .ws-composer-top{padding:14px 28px;border-bottom:1px solid var(--line);background:#fff}
+  .ws-composer-bottom{padding:14px 28px;border-top:1px solid var(--line);background:#fff}
+  .ws-composer-bottom .cin{max-width:680px;margin:0 auto}
   .ws-body{flex:1;overflow-y:auto;padding:26px 28px;scroll-behavior:smooth}
   .ws-body .acard,.ws-body .followups,.ws-body .umsg,.ws-body .think{max-width:680px}
   .insight{border-radius:12px;padding:14px 16px;margin-bottom:10px;max-width:680px;font-size:13.5px;display:flex;gap:10px;align-items:flex-start}
@@ -513,8 +514,8 @@ function renderWorkspace(){
       <button class="ws-new" id="wsNew"><i class="ti ti-plus"></i> New thread</button>
     </div>
     <div class="ws-main">
-      <div class="ws-composer-top"><div class="cin"><i class="ti ti-sparkles spk"></i><input id="wsInput" placeholder="Ask anything about your business…" autocomplete="off"><i class="ti ti-microphone mic"></i><button class="send" id="wsSend" disabled><i class="ti ti-arrow-up"></i></button></div></div>
       <div class="ws-body" id="wsBody">${wsBriefing()}</div>
+      <div class="ws-composer-bottom"><div class="cin"><i class="ti ti-sparkles spk"></i><input id="wsInput" placeholder="Ask anything about your business…" autocomplete="off"><i class="ti ti-microphone mic"></i><button class="send" id="wsSend" disabled><i class="ti ti-arrow-up"></i></button></div></div>
     </div></div>`;
   const wsInput=document.getElementById('wsInput'), wsSend=document.getElementById('wsSend'), wsBody=document.getElementById('wsBody');
   wsInput.addEventListener('input',()=>wsSend.disabled=!wsInput.value.trim());
