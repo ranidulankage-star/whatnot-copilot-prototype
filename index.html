@@ -525,10 +525,9 @@ function renderWorkspace(){
   wsInput.addEventListener('input',()=>wsSend.disabled=!wsInput.value.trim());
   wsInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&wsInput.value.trim()){wsBody.innerHTML='';submit(wsInput.value.trim(),wsBody);wsInput.value='';wsSend.disabled=true;}});
   wsSend.onclick=()=>{if(wsInput.value.trim()){wsBody.innerHTML='';submit(wsInput.value.trim(),wsBody);wsInput.value='';wsSend.disabled=true;}};
-  document.getElementById('wsNew').onclick=()=>{wsBody.innerHTML=wsBriefing();bindWs();};
+  document.getElementById('wsNew').onclick=()=>renderWorkspace();
   bindWs();
   function bindWs(){ pageContent.querySelectorAll('.ws-th[data-q]').forEach(t=>t.onclick=()=>{wsBody.innerHTML='';submit(t.dataset.q,wsBody);}); pageContent.querySelectorAll('#wsBody [data-q]').forEach(el=>el.onclick=()=>{wsBody.innerHTML='';submit(el.dataset.q,wsBody);}); }
-  window._bindWs=bindWs;
 }
 function wsBriefing(){
   return `<div class="greet" style="font-size:24px">Good morning, Ranidu</div>
