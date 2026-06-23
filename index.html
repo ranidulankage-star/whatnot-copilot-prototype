@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Whatnot AI Copilot — Interactive Prototype</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+<style>
+  :root{
+    --yellow:#FFE817; --bg:#f4f3ef; --surface:#fff; --ink:#161615; --muted:#6b6b67;
+    --line:rgba(0,0,0,.09); --line2:rgba(0,0,0,.16);
+    --up:#0f8a5f; --down:#c0392b; --teal:#0F6E56;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",sans-serif;background:#e9e8e3;color:var(--ink);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.5}
+
+  /* Prototype banner */
+  .proto-bar{background:#000;color:#fff;font-size:12px;padding:7px 16px;display:flex;align-items:center;gap:8px;justify-content:center}
+  .proto-bar b{color:var(--yellow);font-weight:600}
+  .proto-bar i{color:var(--yellow)}
+
+  /* App shell */
+  .app{height:calc(100vh - 33px);display:flex;flex-direction:column;background:var(--surface)}
+  .topbar{height:56px;display:flex;align-items:center;gap:14px;padding:0 18px;border-bottom:1px solid var(--line);flex-shrink:0;background:#fff;z-index:20}
+  .logo{width:30px;height:30px;border-radius:7px;background:var(--yellow);display:flex;align-items:center;justify-content:center;font-weight:800;color:#000;font-size:15px}
+  .hub-pill{background:#000;color:#fff;font-size:12px;font-weight:600;padding:5px 11px;border-radius:6px}
+  .top-spacer{flex:1}
+  .icon-btn{width:34px;height:34px;border-radius:8px;border:none;background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;position:relative}
+  .icon-btn:hover{background:var(--bg)}
+  .spark-btn{background:#000;border:1.5px solid var(--yellow)}
+  .spark-btn i{color:var(--yellow)}
+  .spark-btn:hover{background:#111}
+  .spark-btn .pulse{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--yellow);box-shadow:0 0 0 0 rgba(255,232,23,.7);animation:pulse 2.4s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,232,23,.6)}70%{box-shadow:0 0 0 7px rgba(255,232,23,0)}100%{box-shadow:0 0 0 0 rgba(255,232,23,0)}}
+  .avatar{width:30px;height:30px;border-radius:50%;background:#e6f1fb;color:#0c447c;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+  .tt{position:relative}
+  .tt:hover::after{content:attr(data-tt);position:absolute;top:42px;right:0;background:#000;color:#fff;font-size:11px;padding:5px 9px;border-radius:6px;white-space:nowrap;z-index:60}
+
+  .body-wrap{flex:1;display:flex;min-height:0}
+  .nav{width:210px;border-right:1px solid var(--line);padding:14px 10px;flex-shrink:0;background:#fcfcfb;overflow:auto}
+  .nav .ni{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;font-size:13.5px;color:var(--muted);cursor:pointer;margin-bottom:2px}
+  .nav .ni i{font-size:18px}
+  .nav .ni:hover{background:var(--bg);color:var(--ink)}
+  .nav .ni.active{background:#000;color:#fff;font-weight:600}
+  .nav .ni .nb{margin-left:auto;background:var(--yellow);color:#000;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px}
+
+  .main{flex:1;overflow:auto;padding:32px 40px;background:var(--bg)}
+  .greet{font-size:26px;font-weight:700;letter-spacing:-.02em}
+  .greet-sub{color:var(--muted);font-size:14px;margin:4px 0 24px}
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+  .metric{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;position:relative;cursor:pointer;transition:.12s}
+  .metric:hover{border-color:var(--line2);box-shadow:0 2px 10px rgba(0,0,0,.04)}
+  .metric .ml{font-size:12px;color:var(--muted);margin-bottom:6px}
+  .metric .mv{font-size:24px;font-weight:700;letter-spacing:-.01em}
+  .metric .md{font-size:12px;margin-top:3px}
+  .metric .ask-chip{position:absolute;top:11px;right:11px;opacity:0;transition:.12s;background:#000;color:var(--yellow);font-size:10px;font-weight:700;padding:3px 7px;border-radius:5px;display:flex;align-items:center;gap:3px}
+  .metric:hover .ask-chip{opacity:1}
+  .up{color:var(--up)} .down{color:var(--down)}
+
+  .panel-title{font-size:14px;font-weight:700;margin:0 0 12px}
+  .shows{display:flex;flex-direction:column;gap:8px;max-width:560px}
+  .show{background:#fff;border:1px solid var(--line);border-radius:10px;padding:13px 16px;display:flex;align-items:center;gap:12px}
+  .show .dot{width:8px;height:8px;border-radius:50%;background:var(--teal)}
+  .show .sn{font-weight:600;font-size:13px}
+  .show .ss{color:var(--muted);font-size:12px;margin-top:1px}
+  .show .sg{margin-left:auto;text-align:right}
+  .show .sgmv{font-weight:700;font-size:14px}
+
+  /* FAB */
+  .fab{position:absolute;bottom:24px;right:24px;height:48px;padding:0 18px 0 16px;border-radius:26px;background:#000;border:2px solid var(--yellow);color:#fff;display:flex;align-items:center;gap:9px;cursor:pointer;z-index:25;box-shadow:0 6px 20px rgba(0,0,0,.18);font-size:14px;font-weight:600}
+  .fab i{color:var(--yellow);font-size:17px}
+  .fab .kbd{font-size:10px;background:rgba(255,255,255,.16);padding:2px 6px;border-radius:4px;font-weight:500}
+  .fab.hide{display:none}
+
+  /* Copilot side panel */
+  .scrim{position:fixed;inset:33px 0 0 0;background:rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:.2s;z-index:40}
+  .scrim.show{opacity:1;pointer-events:auto}
+  .copilot{position:fixed;top:33px;bottom:0;right:0;width:420px;max-width:92vw;background:#fff;border-left:2px solid var(--yellow);transform:translateX(100%);transition:transform .26s cubic-bezier(.2,.8,.2,1);z-index:50;display:flex;flex-direction:column;box-shadow:-12px 0 40px rgba(0,0,0,.12)}
+  .copilot.open{transform:translateX(0)}
+  .cp-head{height:54px;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--line);flex-shrink:0}
+  .cp-spark{width:28px;height:28px;border-radius:7px;background:#000;display:flex;align-items:center;justify-content:center}
+  .cp-spark i{color:var(--yellow);font-size:15px}
+  .cp-title{font-weight:700;font-size:14px}
+  .cp-sub{font-size:11px;color:var(--muted)}
+  .cp-head .ctx{margin-left:auto;font-size:10px;color:var(--muted);background:var(--bg);padding:3px 8px;border-radius:5px}
+  .cp-x{width:30px;height:30px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-radius:7px;font-size:17px;display:flex;align-items:center;justify-content:center}
+  .cp-x:hover{background:var(--bg)}
+
+  .cp-body{flex:1;overflow-y:auto;padding:16px 14px;scroll-behavior:smooth}
+  .cp-empty .lbl{font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin:0 0 9px}
+  .sugg{display:block;width:100%;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--ink);cursor:pointer;margin-bottom:7px;transition:.1s;display:flex;align-items:center;gap:9px}
+  .sugg:hover{border-color:#000;background:#fff}
+  .sugg i{color:var(--muted);font-size:15px;flex-shrink:0}
+  .recents{margin-top:18px}
+  .recent{padding:8px 10px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:9px}
+  .recent:hover{background:var(--bg)}
+  .recent i{color:var(--muted);font-size:14px}
+  .recent .rt{font-size:12.5px;font-weight:500}
+  .recent .rm{font-size:11px;color:var(--muted);margin-left:auto}
+
+  /* chat */
+  .umsg{display:flex;justify-content:flex-end;margin:14px 0 12px}
+  .umsg .b{background:#000;color:#fff;padding:9px 13px;border-radius:14px 14px 4px 14px;font-size:13px;max-width:84%}
+  .think{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+  .step{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--muted)}
+  .step .sp{width:14px;height:14px;border:2px solid var(--yellow);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+  .step.done .sp{border:none;width:auto;height:auto;animation:none}
+  .step.done .sp::before{content:"\2713";color:var(--up);font-size:13px;font-weight:700}
+  .step.done{color:var(--ink)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .acard{border:1px solid var(--line2);border-radius:14px;overflow:hidden;margin-bottom:14px;animation:rise .3s ease}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .ah{padding:14px 16px 12px}
+  .ah .al{font-size:11px;color:var(--muted);margin-bottom:3px}
+  .ah .ahl{font-size:27px;font-weight:700;letter-spacing:-.02em;line-height:1.05}
+  .ah .ahl .u{font-size:13px;color:var(--muted);font-weight:400;margin-left:5px}
+  .ah .as{font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.5}
+  .ah .prose{font-size:13.5px;line-height:1.65;color:var(--ink);margin-top:4px}
+  .ah .prose b{font-weight:600}
+  .viz{padding:4px 16px 14px}
+  .bars{display:flex;align-items:flex-end;gap:12px;height:90px}
+  .bars .col{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
+  .bars .v{font-size:10px;font-weight:700;margin-bottom:4px}
+  .bars .bar{width:100%;border-radius:5px 5px 0 0;background:var(--yellow)}
+  .bars .bar.b2{background:#000}
+  .bars .lab{font-size:10px;color:var(--muted);margin-top:5px}
+  table.at{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.at th{text-align:left;padding:7px 16px;font-size:11px;color:var(--muted);font-weight:600;background:var(--bg);border-bottom:1px solid var(--line)}
+  table.at td{padding:8px 16px;border-bottom:1px solid var(--line)}
+  table.at tr:last-child td{border:none}
+  table.at .num{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+  .av{width:20px;height:20px;border-radius:50%;background:#e6f1fb;color:#0c447c;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;margin-right:7px;vertical-align:-5px}
+  .spark-line{display:flex;align-items:flex-end;gap:4px;height:54px;margin-top:6px}
+  .spark-line .sb{flex:1;background:var(--yellow);border-radius:3px 3px 0 0;min-height:6px}
+  .prov{padding:9px 16px;border-top:1px solid var(--line);background:var(--bg);display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)}
+  .prov i{font-size:13px}
+  .acts{padding:9px 16px;border-top:1px solid var(--line);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .act{font-size:11px;border:1px solid var(--line2);background:#fff;border-radius:7px;padding:5px 9px;cursor:pointer;display:flex;align-items:center;gap:5px;color:var(--ink)}
+  .act:hover{background:var(--bg)}
+  .act.primary{background:#000;color:var(--yellow);border-color:#000;font-weight:600}
+  .act i{font-size:13px}
+  .fb{margin-left:auto;display:flex;gap:8px}
+  .fb i{color:#bbb;cursor:pointer;font-size:15px}
+  .fb i:hover{color:var(--muted)}
+  .followups{margin:2px 0 16px}
+  .followups .fl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px}
+  .chip{display:inline-block;font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:6px 11px;margin:0 5px 5px 0;cursor:pointer}
+  .chip:hover{border-color:#000;background:#fff}
+
+  /* composer */
+  .composer{padding:11px 14px;border-top:1px solid var(--line);flex-shrink:0;background:#fff}
+  .cin{display:flex;align-items:center;gap:9px;background:var(--bg);border:1px solid var(--line2);border-radius:22px;padding:7px 8px 7px 14px}
+  .cin i.spk{color:#000;font-size:15px}
+  .cin input{flex:1;border:none;background:transparent;outline:none;font-size:13px;color:var(--ink)}
+  .cin .send{width:30px;height:30px;border-radius:50%;background:var(--yellow);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+  .cin .send:disabled{background:#e2e1db;cursor:default}
+  .cin .send i{color:#000;font-size:15px}
+  .cin .mic{color:var(--muted);font-size:15px;cursor:pointer}
+
+  /* ⌘K hint */
+  .khint{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#000;color:#fff;font-size:12px;padding:8px 14px;border-radius:20px;z-index:30;opacity:.92;display:flex;align-items:center;gap:8px}
+  .khint .kbd{background:rgba(255,255,255,.16);padding:2px 7px;border-radius:5px;font-size:11px}
+  .khint.gone{display:none}
+
+  @media(max-width:720px){.metrics{grid-template-columns:1fr 1fr}.nav{display:none}.main{padding:22px 18px}.copilot{width:100%}}
+</style>
+</head>
+<body>
+
+<div class="proto-bar"><i class="ti ti-sparkles"></i> <span>Interactive prototype — <b>Whatnot AI Copilot</b>. Click the sparkle icon, the FAB, or press <b>⌘K</b> to start. Try the suggested questions or type your own.</span></div>
+
+<div class="app">
+  <div class="topbar">
+    <div class="logo">W</div>
+    <div class="hub-pill">Seller Hub</div>
+    <div class="top-spacer"></div>
+    <button class="icon-btn spark-btn tt" data-tt="Ask Copilot (⌘K)" id="sparkBtn"><i class="ti ti-sparkles"></i><span class="pulse"></span></button>
+    <button class="icon-btn"><i class="ti ti-plus"></i></button>
+    <button class="icon-btn"><i class="ti ti-bell"></i></button>
+    <div class="avatar">R</div>
+  </div>
+
+  <div class="body-wrap">
+    <nav class="nav">
+      <div class="ni active"><i class="ti ti-home"></i> Home</div>
+      <div class="ni"><i class="ti ti-package"></i> Inventory</div>
+      <div class="ni"><i class="ti ti-broadcast"></i> Shows</div>
+      <div class="ni"><i class="ti ti-receipt"></i> Orders</div>
+      <div class="ni" id="navAsk"><i class="ti ti-sparkles"></i> Ask Whatnot <span class="nb">NEW</span></div>
+      <div class="ni"><i class="ti ti-chart-bar"></i> Analytics</div>
+      <div class="ni"><i class="ti ti-dollar"></i> Payouts</div>
+    </nav>
+
+    <main class="main">
+      <div class="greet">Good morning, Ranidu</div>
+      <div class="greet-sub">Here's how your store is doing this week.</div>
+
+      <div class="metrics">
+        <div class="metric" data-q="What was my GMV last week?"><div class="ml">GMV this week</div><div class="mv">$18,420</div><div class="md up">▲ 23% vs last week</div><div class="ask-chip"><i class="ti ti-sparkles"></i> Ask</div></div>
+        <div class="metric" data-q="What's my average viewers trend?"><div class="ml">Avg viewers</div><div class="mv">347</div><div class="md up">▲ 12%</div><div class="ask-chip"><i class="ti ti-sparkles"></i> Ask</div></div>
+        <div class="metric" data-q="How is my sell-through doing?"><div class="ml">Sell-through</div><div class="mv">71%</div><div class="md down">▼ 2%</div><div class="ask-chip"><i class="ti ti-sparkles"></i> Ask</div></div>
+        <div class="metric" data-q="Who are my top buyers?"><div class="ml">Repeat buyers</div><div class="mv">42</div><div class="md up">▲ 8%</div><div class="ask-chip"><i class="ti ti-sparkles"></i> Ask</div></div>
+      </div>
+
+      <div class="panel-title">Your recent shows</div>
+      <div class="shows">
+        <div class="show"><span class="dot"></span><div><div class="sn">Tuesday Pokémon Drop</div><div class="ss">412 viewers · 2 days ago</div></div><div class="sg"><div class="sgmv">$4,210</div></div></div>
+        <div class="show"><span class="dot"></span><div><div class="sn">Friday Sports Cards</div><div class="ss">287 viewers · 5 days ago</div></div><div class="sg"><div class="sgmv">$2,840</div></div></div>
+        <div class="show"><span class="dot"></span><div><div class="sn">Sunday Marketplace</div><div class="ss">392 viewers · last week</div></div><div class="sg"><div class="sgmv">$5,420</div></div></div>
+      </div>
+    </main>
+  </div>
+
+  <button class="fab" id="fab"><i class="ti ti-sparkles"></i> Ask Copilot <span class="kbd">⌘K</span></button>
+</div>
+
+<div class="khint" id="khint"><i class="ti ti-arrow-up-right" style="color:var(--yellow)"></i> Click the sparkle icon or press <span class="kbd">⌘K</span> to open the Copilot</div>
+
+<div class="scrim" id="scrim"></div>
+
+<aside class="copilot" id="copilot">
+  <div class="cp-head">
+    <div class="cp-spark"><i class="ti ti-sparkles"></i></div>
+    <div><div class="cp-title">Copilot</div><div class="cp-sub" id="cpSub">New thread</div></div>
+    <span class="ctx" id="cpCtx">Home context</span>
+    <button class="cp-x" id="cpX"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="cp-body" id="cpBody"></div>
+  <div class="composer">
+    <div class="cin">
+      <i class="ti ti-sparkles spk"></i>
+      <input id="cpInput" placeholder="Ask about your business…" autocomplete="off">
+      <i class="ti ti-microphone mic"></i>
+      <button class="send" id="cpSend" disabled><i class="ti ti-arrow-up"></i></button>
+    </div>
+  </div>
+</aside>
+
+<script>
+/* ---------------- Data model: canned answers with real-looking data ---------------- */
+const ANSWERS = {
+  gmv: {
+    match:["gmv","revenue","made","sales","earn","money"],
+    user:"What was my GMV last week?",
+    steps:["Reading your orders","Filtering to paid · last 7 days","Comparing to prior week"],
+    render:()=>card({
+      label:"GMV · last 7 days",
+      headline:"$18,420",
+      sub:'<span class="up">▲ 23%</span> vs the prior week ($14,980). Your highest weekly total in the last 90 days.',
+      prov:"Orders · paid · last 7 days · 412 orders · 1.4s",
+      follow:["What drove the increase?","Compare my last 3 shows","Break it down by category"]
+    })
+  },
+  compare:{
+    match:["compare","last 3 shows","3 shows","which show","best show","show perform"],
+    user:"Compare my last 3 shows by GMV",
+    steps:["Finding your last 3 shows","Pulling GMV per show","Building comparison"],
+    render:()=>card({
+      label:"GMV · last 3 shows",
+      headline:"$12,470",
+      sub:'<span class="up">Sunday Marketplace</span> was your top show. Tuesday drove <b>48% more</b> than Friday despite fewer viewers.',
+      viz:bars([["Tue","$4,210",65,0],["Fri","$2,840",44,1],["Sun","$5,420",84,0]]),
+      prov:"Shows · last 3 · 1,091 viewers total · 1.9s",
+      follow:["Why did Tuesday beat Friday?","What sold best on Sunday?","Best time to schedule a show"]
+    })
+  },
+  why:{
+    match:["why did tuesday","why tuesday","tuesday beat","tuesday outperform","what drove","drove the increase","why"],
+    user:"Why did Tuesday outperform Friday?",
+    steps:["Comparing Tuesday vs Friday shows","Analyzing audience, inventory & timing","Writing up what I found"],
+    render:()=>card({
+      prose:`Tuesday outperformed Friday for three reasons:<br><br>
+        <b>1. Audience timing.</b> 73% of Tuesday's bids came after 7 PM, when your collector audience is most active — vs 41% on Friday.<br><br>
+        <b>2. Inventory mix.</b> You listed 18 Pokémon lots on Tuesday vs 6 on Friday. Pokémon converts 2.4× higher than your other categories.<br><br>
+        <b>3. Watch time.</b> Average watch time was 22 min on Tuesday vs 11 min on Friday — longer sessions correlate with higher spend.`,
+      prov:"Shows · last 30 days · 12 sessions compared · 2.3s",
+      acts:[["ti-calendar-plus","Add a Tuesday slot",1],["ti-chart-bar","Show me the data",0]],
+      follow:["Add another Tuesday show","What's my best time slot?","How do I get longer watch times?"]
+    })
+  },
+  buyers:{
+    match:["top buyers","best buyers","who bought","repeat buyers","biggest buyers","loyal"],
+    user:"Who are my top buyers?",
+    steps:["Ranking buyers by 30-day spend","Pulling purchase history"],
+    render:()=>card({
+      label:"Top buyers · last 30 days",
+      table:`<table class="at"><thead><tr><th>Buyer</th><th class="num">Spend</th><th class="num">Orders</th></tr></thead><tbody>
+        <tr><td><span class="av">MC</span>cardcollector_mike</td><td class="num">$1,240</td><td class="num">14</td></tr>
+        <tr><td><span class="av">PM</span>poke_master_99</td><td class="num">$890</td><td class="num">9</td></tr>
+        <tr><td><span class="av">VF</span>vintage_finds</td><td class="num">$720</td><td class="num">11</td></tr>
+        <tr><td><span class="av">SJ</span>slabbed_jordan</td><td class="num">$610</td><td class="num">6</td></tr>
+        <tr><td><span class="av">TK</span>tcg_kayla</td><td class="num">$540</td><td class="num">8</td></tr>
+      </tbody></table>`,
+      prov:"Orders · last 30 days · grouped by buyer · 1.1s",
+      follow:["Which top buyer hasn't returned?","Draft a thank-you to my top 3","Average order value by buyer"]
+    })
+  },
+  viewers:{
+    match:["viewers","viewer trend","average viewers","audience trend","watching"],
+    user:"What's my average viewers trend?",
+    steps:["Pulling viewer counts per show","Building 8-week trend"],
+    render:()=>card({
+      label:"Avg concurrent viewers · 8 weeks",
+      headline:"347",
+      sub:'<span class="up">▲ 12%</span> over 8 weeks, but <span class="down">down 8%</span> in the last 3 shows — worth watching.',
+      viz:sparkline([210,245,260,290,310,360,375,347]),
+      prov:"Shows · last 8 weeks · 23 sessions · 1.3s",
+      follow:["Why are viewers dropping recently?","Best time slot for viewers","Compare to last quarter"]
+    })
+  },
+  sellthrough:{
+    match:["sell-through","sellthrough","sell through","inventory moving","stock"],
+    user:"How is my sell-through doing?",
+    steps:["Calculating sell-through per show","Comparing to your baseline"],
+    render:()=>card({
+      label:"Sell-through · last 30 days",
+      headline:"71%",
+      sub:'<span class="down">▼ 2%</span> vs last month. Trading cards clear at 84%; apparel is dragging the average at 52%.',
+      viz:bars([["Cards","84%",84,0],["Sneakers","68%",68,1],["Apparel","52%",52,1]]),
+      prov:"Listings · last 30 days · 1,840 items · 1.6s",
+      follow:["Which items aren't selling?","Should I drop apparel?","What should I feature next show?"]
+    })
+  },
+  schedule:{
+    match:["best time","when should i","schedule","time slot","when to go live"],
+    user:"What's the best time to schedule my next show?",
+    steps:["Analyzing your show history by day & hour","Checking category competition","Forming a recommendation"],
+    render:()=>card({
+      prose:`Based on your last 12 shows, your <b>Tuesday 7–9 PM ET</b> slot is your strongest — it averages <b>$4,100 GMV</b> and your highest watch time. Sunday evenings are a close second.<br><br>Friday afternoons consistently underperform (avg $2,400) and overlap with two larger Pokémon sellers in your category.`,
+      prov:"Shows · last 12 · day/hour breakdown · 2.0s",
+      acts:[["ti-calendar-plus","Schedule Tuesday 7 PM",1],["ti-clock","See all time slots",0]],
+      follow:["Who am I competing with on Friday?","Schedule a recurring Tuesday show","What should I sell?"]
+    })
+  },
+  agentic:{
+    match:["return rate","returns","complaints","draft","unhappy","refund"],
+    user:"My return rate looks high — what's going on?",
+    steps:["Scanning recent orders & returns","Reading buyer messages","Drafting a response plan"],
+    render:()=>cardAgentic()
+  }
+};
+
+const FALLBACK = {
+  user:null,
+  steps:["Understanding your question","Checking what I can answer"],
+  render:(q)=>card({
+    prose:`I'm focused on <b>analytics</b> right now — I can answer questions about your GMV, shows, viewers, buyers, sell-through, and scheduling. Try one of these:`,
+    follow:["What was my GMV last week?","Compare my last 3 shows","Who are my top buyers?","Best time to schedule a show"]
+  })
+};
+
+/* ---------------- Render helpers ---------------- */
+function bars(rows){ // rows: [label, value, heightPct, style(0=yellow,1=black)]
+  return `<div class="viz"><div class="bars">${rows.map(r=>
+    `<div class="col"><div class="v">${r[1]}</div><div class="bar ${r[3]?'b2':''}" style="height:${r[2]}%"></div><div class="lab">${r[0]}</div></div>`).join("")}</div></div>`;
+}
+function sparkline(vals){
+  const max=Math.max(...vals);
+  return `<div class="viz"><div class="spark-line">${vals.map(v=>`<div class="sb" style="height:${Math.round(v/max*100)}%"></div>`).join("")}</div></div>`;
+}
+function card(o){
+  let h=`<div class="acard"><div class="ah">`;
+  if(o.label) h+=`<div class="al">${o.label}</div>`;
+  if(o.headline) h+=`<div class="ahl">${o.headline}</div>`;
+  if(o.sub) h+=`<div class="as">${o.sub}</div>`;
+  if(o.prose) h+=`<div class="prose">${o.prose}</div>`;
+  h+=`</div>`;
+  if(o.viz) h+=o.viz;
+  if(o.table) h+=o.table;
+  if(o.prov) h+=`<div class="prov"><i class="ti ti-database"></i> ${o.prov}<i class="ti ti-chevron-down" style="margin-left:auto"></i></div>`;
+  h+=`<div class="acts">`;
+  if(o.acts) o.acts.forEach(a=>h+=`<button class="act ${a[2]?'primary':''}"><i class="ti ${a[0]}"></i> ${a[1]}</button>`);
+  else h+=`<button class="act"><i class="ti ti-pin"></i> Pin</button><button class="act"><i class="ti ti-share"></i> Share</button><button class="act"><i class="ti ti-download"></i> CSV</button>`;
+  h+=`<span class="fb"><i class="ti ti-thumb-up"></i><i class="ti ti-thumb-down"></i></span></div></div>`;
+  if(o.follow) h+=followups(o.follow);
+  return h;
+}
+function cardAgentic(){
+  return `<div class="acard" style="border:1.5px solid var(--yellow)"><div class="ah">
+    <div class="al" style="color:#000;font-weight:600;display:flex;align-items:center;gap:6px"><i class="ti ti-sparkles" style="color:var(--yellow)"></i> Heads up — and I can help</div>
+    <div class="prose">Your return rate jumped to <b>8.4%</b> this week (up from 5.3%). I found <b>3 buyer complaints</b> about the vintage denim listing from Tuesday's show — all mention "fit not as described."<br><br>Want me to draft a response to those 3 buyers offering a refund or store credit?</div>
+  </div>
+  <div class="acts">
+    <button class="act primary"><i class="ti ti-send"></i> Draft 3 responses</button>
+    <button class="act"><i class="ti ti-eye"></i> Show complaints</button>
+    <button class="act"><i class="ti ti-x"></i> Dismiss</button>
+    <span class="fb"><i class="ti ti-thumb-up"></i><i class="ti ti-thumb-down"></i></span>
+  </div></div>
+  <div class="prose" style="font-size:11.5px;color:var(--muted);margin:-6px 2px 14px;padding-left:10px;border-left:2px solid var(--line)">This is a <b>v2 agentic preview</b> — drafting is a write action, so it pauses for your approval before anything sends.</div>`;
+}
+function followups(arr){
+  return `<div class="followups"><div class="fl">Suggested follow-ups</div>${arr.map(f=>`<span class="chip" data-q="${f.replace(/"/g,'&quot;')}">${f}</span>`).join("")}</div>`;
+}
+
+/* ---------------- Empty state ---------------- */
+const SUGGEST=[
+  ["ti-trending-up","What was my GMV last week?"],
+  ["ti-arrows-left-right","Compare my last 3 shows"],
+  ["ti-users","Who are my top buyers?"],
+  ["ti-calendar","Best time to schedule a show"]
+];
+function emptyState(){
+  return `<div class="cp-empty">
+    <div class="lbl">Suggested for this page</div>
+    ${SUGGEST.map(s=>`<button class="sugg" data-q="${s[1]}"><i class="ti ${s[0]}"></i> ${s[1]}</button>`).join("")}
+    <div class="recents">
+      <div class="lbl">Recent threads</div>
+      <div class="recent" data-q="Who are my top buyers?"><i class="ti ti-message"></i><span class="rt">Top buyers last 90 days</span><span class="rm">2h</span></div>
+      <div class="recent" data-q="My return rate looks high — what's going on?"><i class="ti ti-message"></i><span class="rt">Return rate check</span><span class="rm">1d</span></div>
+    </div>
+  </div>`;
+}
+
+/* ---------------- Interaction logic ---------------- */
+const copilot=document.getElementById('copilot'), scrim=document.getElementById('scrim'),
+      body=document.getElementById('cpBody'), input=document.getElementById('cpInput'),
+      send=document.getElementById('cpSend'), khint=document.getElementById('khint'),
+      fab=document.getElementById('fab'), cpSub=document.getElementById('cpSub');
+let started=false;
+
+function openCopilot(){
+  copilot.classList.add('open'); scrim.classList.add('show'); khint.classList.add('gone'); fab.classList.add('hide');
+  if(!started){ body.innerHTML=emptyState(); bindCards(); }
+  setTimeout(()=>input.focus(),260);
+}
+function closeCopilot(){ copilot.classList.remove('open'); scrim.classList.remove('show'); fab.classList.remove('hide'); }
+
+document.getElementById('sparkBtn').onclick=openCopilot;
+document.getElementById('fab').onclick=openCopilot;
+document.getElementById('navAsk').onclick=openCopilot;
+document.getElementById('cpX').onclick=closeCopilot;
+scrim.onclick=closeCopilot;
+document.addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();copilot.classList.contains('open')?closeCopilot():openCopilot();}
+  if(e.key==='Escape'&&copilot.classList.contains('open'))closeCopilot();
+});
+
+input.addEventListener('input',()=>send.disabled=!input.value.trim());
+input.addEventListener('keydown',e=>{if(e.key==='Enter'&&input.value.trim())submit(input.value.trim());});
+send.onclick=()=>{if(input.value.trim())submit(input.value.trim());};
+
+// metric cards on the dashboard
+document.querySelectorAll('.metric').forEach(m=>m.onclick=()=>{openCopilot();setTimeout(()=>submit(m.dataset.q),300);});
+
+function bindCards(){
+  body.querySelectorAll('[data-q]').forEach(el=>el.onclick=()=>submit(el.dataset.q));
+}
+
+function matchAnswer(q){
+  const s=q.toLowerCase();
+  let best=null,bestScore=0;
+  for(const k in ANSWERS){
+    let score=0;
+    ANSWERS[k].match.forEach(m=>{if(s.includes(m))score+=m.length;});
+    if(score>bestScore){bestScore=score;best=ANSWERS[k];}
+  }
+  return bestScore>0?best:FALLBACK;
+}
+
+function submit(q){
+  started=true;
+  cpSub.textContent='Active thread';
+  // remove empty state if present
+  const empty=body.querySelector('.cp-empty'); if(empty)empty.remove();
+  // user message
+  const um=document.createElement('div'); um.className='umsg'; um.innerHTML=`<div class="b">${escapeHtml(q)}</div>`; body.appendChild(um);
+  input.value=''; send.disabled=true; scrollDown();
+
+  const ans=matchAnswer(q);
+  const steps=ans.steps||["Working on it"];
+  // streaming steps
+  const tw=document.createElement('div'); tw.className='think'; body.appendChild(tw); scrollDown();
+  let i=0;
+  function nextStep(){
+    if(i>0) tw.children[i-1].classList.add('done');
+    if(i<steps.length){
+      const sd=document.createElement('div'); sd.className='step';
+      sd.innerHTML=`<span class="sp"></span> ${steps[i]}`; tw.appendChild(sd); scrollDown(); i++;
+      setTimeout(nextStep, 620+Math.random()*350);
+    } else {
+      setTimeout(()=>{
+        tw.remove();
+        const wrap=document.createElement('div'); wrap.innerHTML=ans.render(q);
+        while(wrap.firstChild)body.appendChild(wrap.firstChild);
+        bindCards(); scrollDown();
+      },400);
+    }
+  }
+  nextStep();
+}
+
+function scrollDown(){ body.scrollTop=body.scrollHeight; }
+function escapeHtml(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+// auto-dismiss the hint after a bit
+setTimeout(()=>khint.classList.add('gone'),9000);
+</script>
+</body>
+</html>
