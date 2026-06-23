@@ -246,7 +246,8 @@
     </main>
   </div>
 
-  <button class="fab" id="fab"><i class="ti ti-sparkles"></i> Ask Copilot <span class="kbd">⌘K</span></button>
+  <!-- FAB removed for now — top-bar icon + nav cover entry. -->
+
 </div>
 
 <div class="khint" id="khint"><i class="ti ti-arrow-up-right" style="color:var(--yellow)"></i> Click the sparkle icon / FAB for the side panel, or "Ask Whatnot" in the nav for the full workspace</div>
@@ -497,7 +498,7 @@ const main=document.getElementById('main'), pageContent=document.getElementById(
       copilot=document.getElementById('copilot'), scrim=document.getElementById('scrim'),
       cpBody=document.getElementById('cpBody'), input=document.getElementById('cpInput'),
       send=document.getElementById('cpSend'), khint=document.getElementById('khint'),
-      fab=document.getElementById('fab'), cpSub=document.getElementById('cpSub'),
+      fab={classList:{add(){},remove(){}}}, cpSub=document.getElementById('cpSub'),
       cpCtx=document.getElementById('cpCtx'), ctoast=document.getElementById('ctoast'),
       ctoastTab=document.getElementById('ctoastTab');
 
