@@ -216,7 +216,7 @@
 </head>
 <body>
 
-<div class="proto-bar"><i class="ti ti-sparkles"></i> <span><b>Whatnot AI Copilot</b> prototype · Switch tabs to see contextual suggestions change · Sparkle/FAB = side panel · <b>"Ask Whatnot" nav = full-page workspace</b> · ⌘K anywhere</span></div>
+<div class="proto-bar"><i class="ti ti-sparkles"></i> <span><b>Whatnot AI Copilot</b> prototype · Switch tabs to see contextual suggestions change · Sparkle icon = side panel · <b>"Ask Whatnot" nav = full-page workspace</b> · ⌘K anywhere</span></div>
 
 <div class="app">
   <div class="topbar">
@@ -535,7 +535,7 @@ function emptyState(){
 }
 function hasThread(){return cpBody.querySelector('.umsg')!==null;}
 function newThread(){cpBody.innerHTML=emptyState();bindCards();cpSub.textContent='New thread';input.focus();}
-function openCopilot(){copilot.classList.add('open');scrim.classList.add('show');khint.classList.add('gone');fab.classList.add('hide');if(!hasThread()){cpBody.innerHTML=emptyState();bindCards();}setTimeout(()=>input.focus(),260);}
+function openCopilot(){copilot.classList.add('open');khint.classList.add('gone');fab.classList.add('hide');if(!hasThread()){cpBody.innerHTML=emptyState();bindCards();}setTimeout(()=>input.focus(),260);}
 function closeCopilot(){copilot.classList.remove('open');scrim.classList.remove('show');if(currentTab!=='ask')fab.classList.remove('hide');}
 document.getElementById('sparkBtn').onclick=openCopilot;
 fab.onclick=openCopilot;
