@@ -497,7 +497,7 @@ const main=document.getElementById('main'), pageContent=document.getElementById(
 function renderTab(tab){
   currentTab=tab;
   document.querySelectorAll('.nav .ni').forEach(n=>n.classList.toggle('active',n.dataset.tab===tab));
-  if(tab==='ask'){ renderWorkspace(); fab.classList.add('hide'); return; }
+  if(tab==='ask'){ copilot.classList.remove('open'); scrim.classList.remove('show'); renderWorkspace(); fab.classList.add('hide'); return; }
   fab.classList.remove('hide');
   pageContent.innerHTML=TABS[tab].page();
   bindMetrics();
