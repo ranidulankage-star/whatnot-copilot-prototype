@@ -192,6 +192,7 @@
   .ws-composer-bottom{padding:14px 28px;border-top:1px solid var(--line);background:#fff}
   .ws-composer-bottom .cin{max-width:680px;margin:0 auto}
   .ws-body{flex:1;overflow-y:auto;padding:26px 28px;scroll-behavior:smooth}
+  .ws-welcome{max-width:640px;margin:7vh auto 0}
   .ws-body .acard,.ws-body .followups,.ws-body .umsg,.ws-body .think{max-width:680px}
   .insight{border-radius:12px;padding:14px 16px;margin-bottom:10px;max-width:680px;font-size:13.5px;display:flex;gap:10px;align-items:flex-start}
   .insight i{flex-shrink:0;font-size:16px;margin-top:1px}
@@ -568,21 +569,18 @@ function renderWorkspace(){
   function bindWs(){ pageContent.querySelectorAll('.ws-th[data-q]').forEach(t=>t.onclick=()=>{wsBody.innerHTML='';submit(t.dataset.q,wsBody);}); pageContent.querySelectorAll('#wsBody [data-q]').forEach(el=>el.onclick=()=>{wsBody.innerHTML='';submit(el.dataset.q,wsBody);}); }
 }
 function wsBriefing(){
-  return `<div class="greet" style="font-size:24px">Good morning, Ranidu</div>
-    <div class="greet-sub">3 insights worth a look · updated 4 min ago</div>
-    <div class="metrics" style="max-width:680px">
-      ${metric("GMV","$18,420","up","▲23%","What was my GMV last week?")}
-      ${metric("Viewers","347","up","▲12%","What's my average viewers trend?")}
-      ${metric("Sell-thru","71%","down","▼2%","How is my sell-through doing?")}
-      ${metric("Repeat","42","up","▲8%","Who are my top buyers?")}
-    </div>
-    <div class="insight op" data-q="Why did Tuesday outperform Friday?"><i class="ti ti-sparkles"></i><div><b>Opportunity:</b> Tuesday shows convert 2.3× higher than other slots. Add another Tuesday?</div><span class="ia">Show me why →</span></div>
-    <div class="insight an" data-q="My return rate looks high — what's going on?"><i class="ti ti-alert-triangle"></i><div><b>Anomaly:</b> Return rate up to 8.4% — 3 complaints on one listing.</div><span class="ia">Look into it →</span></div>
-    <div class="followups" style="margin-top:18px"><div class="fl">Or ask anything</div>
+  return `<div class="ws-welcome">
+    <div class="greet" style="font-size:26px">Good morning, Ranidu</div>
+    <div class="greet-sub">One thing worth a look this morning — or ask me anything about your store.</div>
+    <div class="insight op" data-q="Why did Tuesday outperform Friday?" style="margin-top:20px"><i class="ti ti-sparkles"></i><div><b>Opportunity:</b> Tuesday shows convert 2.3× higher than your other slots. Add another Tuesday?</div><span class="ia">Show me why →</span></div>
+    <div class="followups" style="margin-top:24px"><div class="fl">Try asking</div>
+      <span class="chip" data-q="What was my GMV last week?">What was my GMV last week?</span>
       <span class="chip" data-q="Compare my last 3 shows">Compare my last 3 shows</span>
+      <span class="chip" data-q="Who are my top buyers?">Who are my top buyers?</span>
       <span class="chip" data-q="Which items are about to stock out?">Which items are about to stock out?</span>
       <span class="chip" data-q="How do I set up Media Mail shipping?">How do I set up Media Mail shipping?</span>
-      <span class="chip" data-q="When's my next payout?">When's my next payout?</span></div>`;
+      <span class="chip" data-q="When's my next payout?">When's my next payout?</span></div>
+  </div>`;
 }
 
 /* ===================== SUBMIT / STREAM (shared) ===================== */
